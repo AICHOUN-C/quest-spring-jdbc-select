@@ -1,7 +1,14 @@
 package com.wildcodeschool.wildandwizard.repository;
 
 import com.wildcodeschool.wildandwizard.entity.School;
+import com.wildcodeschool.wildandwizard.util.JdbcUtils;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SchoolRepository {
@@ -11,8 +18,36 @@ public class SchoolRepository {
     private final static String DB_PASSWORD = "Horcrux4life!";
 
     public List<School> findAll() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = DriverManager.getConnection(
+                    DB_URL, DB_USER, DB_PASSWORD
+            );
+            statement = connection.prepareStatement(
+                    "SELECT * FROM school;"
+            );
+            resultSet = statement.executeQuery();
 
-        // TODO : find all schools
+            List<School> schools = new ArrayList<>();
+
+            while (resultSet.next()) {
+                Long id = resultSet.getLong("id");
+                String name = resultSet.getString("name");
+                Long capacity = resultSet.getLong("capacity");
+                String country = resultSet.getString("country");
+                schools.add(new School(id, name, capacity, country));
+                System.out.println(schools);
+            }
+            return schools;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JdbcUtils.closeResultSet(resultSet);
+            JdbcUtils.closeStatement(statement);
+            JdbcUtils.closeConnection(connection);
+        }
         return null;
     }
 
